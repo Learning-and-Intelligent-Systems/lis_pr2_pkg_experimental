@@ -1,0 +1,12 @@
+<launch>
+
+    <node name="tabletop_server" pkg="object_recognition_ros" type="server" output="screen" args="-c $(find lis_pr2_pkg_experimental)/launch/detection.ork --visualize " />
+    
+    <node name="tabletop_client" pkg="lis_pr2_pkg_experimental" type="client" output="screen" />
+
+    <node name="table_filter" pkg="lis_pr2_pkg_experimental" type="filter_tables.py" output="screen" />
+    
+    <node name="object_bb" pkg="lis_pr2_pkg_experimental" type="detect_clusters.py" output="screen" />
+
+</launch>
+
