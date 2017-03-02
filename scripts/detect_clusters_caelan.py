@@ -19,20 +19,38 @@ from threading import Thread
 from openravepy import quatFromRotationMatrix
 from scipy.spatial import ConvexHull
 
+def or_quat_to_ros_quat(or_quat):
+  return np.concatenate([or_quat[1:], or_quat[:1]])
+
+# def oobb_from_points_2D(points): # NOTE - not necessarily optimal
+#   mu = np.mean(points, axis=1)
+#
+#   centered = (points - np.resize(mu, (3,1)))[:2]
+#   u, _, _ = np.linalg.svd(centered)
+#   if np.linalg.det(u) < 0: u[:,1] *= -1
+#
+#   tformed = np.dot(u.T, centered)
+#   extents = np.max(tformed, axis=1) - np.min(tformed, axis=1)
+#   trans = np.identity(3)
+#   trans[:2,:2] = u
+#   w, h, l = np.max(points, axis=1) - np.min(points, axis=1)
+#
+#   return mu, np.concatenate([extents, [l]]), or_quat_to_ros_quat(quatFromRotationMatrix(trans))
+
+
 def oobb_from_points_2D(points): # NOTE - not necessarily optimal
   mu = np.mean(points, axis=1)
-
-  centered = (points - np.resize(mu, (3,1)))[:2]
-  u, _, _ = np.linalg.svd(centered)
+  centered = points - np.resize(mu, (3,1))
+  u, _, _ = np.linalg.svd(centered[:2])
   if np.linalg.det(u) < 0: u[:,1] *= -1
 
-  tformed = np.dot(u.T, centered)
-  extents = np.max(tformed, axis=1) - np.min(tformed, axis=1)
   trans = np.identity(3)
   trans[:2,:2] = u
-  w, h, l = np.max(points, axis=1) - np.min(points, axis=1)
+  tformed = np.dot(trans.T, centered)
+  extents = np.max(tformed, axis=1) - np.min(tformed, axis=1)
 
-  return mu, np.concatenate([extents, [l]]), quatFromRotationMatrix(trans)
+  return mu, extents, or_quat_to_ros_quat(quatFromRotationMatrix(trans))
+
 
 def oobb_from_points(points): # NOTE - not necessarily optimal
   mean = np.mean(points, axis=1)
@@ -49,7 +67,7 @@ def oobb_from_points(points): # NOTE - not necessarily optimal
   #trans = np.identity(3)
   trans = u
 
-  return mean, extents, quatFromRotationMatrix(trans)
+  return mean, extents, or_quat_to_ros_quat(quatFromRotationMatrix(trans))
 
 def aabb_from_points(points): # NOTE - not necessarily optimal
   mu = np.mean(points, axis=1)
@@ -134,7 +152,10 @@ class ClusterFilter():
             #(x, y, z), (w, h, l), quat = oobb_from_points(points.T)
             (x, y, z), (w, h, l), quat = oobb_from_points_2D(points.T)
             print (x, y, z), (w, h, l)
+            print quat
 
+
+            # TODO - the heights of the bounding boxes are off
             #x,y,z = np.mean(points, axis=0)
             #w,h,l = np.max(points,axis=0) - np.min(points,axis=0)
             #quat = np.array([0, 0, 0, 1])
