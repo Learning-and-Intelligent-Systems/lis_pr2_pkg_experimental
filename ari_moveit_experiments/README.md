@@ -3,6 +3,11 @@ Often motion planning fails because the start state is terrible so don't do that
 
 ---------
 
+# Robot
+    robot claim
+    robot start
+    roslaunch lis_pr2_pkg pr2_launch.launch
+
 
 # Launch Code
 
@@ -16,6 +21,7 @@ What you should see after running:
 * table detector
 * bounding boxes over objects
 * interactive moveable arms -- play around with the motion planning panel to make it work
+* head pointer -- click "publish point" option at the top of rviz.  Then highlight a pointcloud or click on robot to make it look at the point you clicked
 
 
 
