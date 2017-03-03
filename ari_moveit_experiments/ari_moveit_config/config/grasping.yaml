@@ -1,0 +1,13 @@
+right_eef_front:
+  database_id: WILLOW_GRIPPER_2010
+  approach_direction: [1.0,0.0,0.0]
+left_eef_front:
+  database_id: WILLOW_GRIPPER_2010
+  approach_direction: [1.0,0.0,0.0]
+
+right_eef_top:
+  database_id: WILLOW_GRIPPER_2010
+  approach_direction: [0.0,1.0,0.0]
+left_eef_top:
+  database_id: WILLOW_GRIPPER_2010
+  approach_direction: [0.0,1.0,0.0]
