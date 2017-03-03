@@ -294,7 +294,8 @@ class ClusterFilter():
             do_motion_planning = False
             viewer = False
 
-            self.env.Save('/home/caelan/catkin_wsd/src/lis_pr2_pkg_experimental/scripts/env.dae', Environment.SelectionOptions.Everything) 
+            env_file = '/home/caelan/catkin_wsd/src/lis_pr2_pkg_experimental/scripts/env.dae'
+            self.env.Save(env_file, Environment.SelectionOptions.Everything)
             rospy.loginfo("Saved!")
 
             results = None
@@ -313,6 +314,11 @@ class ClusterFilter():
             else:
                 rospy.loginfo("Failed pick")
                 print 'Fail'
+
+            #self.uc.open_gripper('l', blocking=True)
+            #self.uc.wait_for_gripper_event('l')
+            ##self.uc.request_gripper_event('l') # Non-blocking
+            self.uc.close_gripper('l', blocking=True)
 
             #self.sub.unregister()
             if viewer:
