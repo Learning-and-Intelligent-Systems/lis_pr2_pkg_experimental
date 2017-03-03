@@ -3,6 +3,11 @@ Often motion planning fails because the start state is terrible so don't do that
 
 ---------
 
+# Robot
+    robot claim
+    robot start
+    roslaunch lis_pr2_pkg pr2_launch.launch
+
 
 # Launch Code
 
