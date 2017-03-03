@@ -34,4 +34,7 @@
 
 <node if="$(arg vision)" pkg="ari_moveit_tests" name="co_linker_node" type="track_large_object.py" output="screen"/>
 
+<!-- head pointer -->
+<node if="$(arg rviz)" pkg="lis_vision" name="head_pointer" type="point_head.py" output="screen"/>
+
 </launch>
