@@ -1,0 +1,40 @@
+<launch>
+  
+
+  <arg name="db" default="false" />
+  <arg name="debug" default="false" />
+  <arg name="rviz" default="false" />
+  <arg name="vision" default="false" />
+
+
+  <arg name="config" default="$(find ari_moveit_config)" />
+
+    <!-- Load warehouse parameters -->  
+  <include file="$(arg config)/launch/default_warehouse_db.launch" if="$(arg db)">
+  </include>
+
+
+  <include file="$(arg config)/launch/move_group.launch">
+    <arg name="allow_trajectory_execution" value="true"/>
+    <arg name="fake_execution" value="false"/>
+    <arg name="info" value="true"/>
+    <arg name="debug" value="$(arg debug)"/>
+
+  </include>
+
+<!-- launch rviz -->
+<arg if="$(arg rviz)" name="command_args" value="-d $(arg config)/launch/ari.rviz" />
+<node if="$(arg rviz)" name="$(anon rviz)" launch-prefix="" pkg="rviz" type="rviz" respawn="false"
+	args="$(arg command_args)" output="screen">
+    <rosparam command="load" file="$(arg config)/config/kinematics.yaml"/>
+  </node>
+
+<!-- launch object detection -->
+<include if="$(arg vision)" file="$(find lis_vision)/launch/simple_vision.launch"/>
+
+<node if="$(arg vision)" pkg="ari_moveit_tests" name="co_linker_node" type="track_large_object.py" output="screen"/>
+
+<!-- head pointer -->
+<node if="$(arg rviz)" pkg="lis_vision" name="head_pointer" type="point_head.py" output="screen"/>
+
+</launch>
