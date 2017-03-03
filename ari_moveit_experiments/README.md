@@ -45,7 +45,7 @@ Run the code with:
     
     rosrun ari_moveit_tests pick_up.py
 
-** ALWAYS VERIFY PURPLE TRAJECTRY BEFORE HITTING ENTER !!!**
+###ALWAYS VERIFY PURPLE TRAJECTRY BEFORE HITTING ENTER !!!!
 
 Hit enter for the different queries.  The robot should approach the object in order to grasp it.  I don't have gripper closing and picking implemented.  
 Hit enter to go back to home (verify trajectory first) and it will loop through the process again.
