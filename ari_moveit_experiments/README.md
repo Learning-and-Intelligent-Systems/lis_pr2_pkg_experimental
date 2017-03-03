@@ -42,6 +42,7 @@ Test 2: pick up an object
 4. There should be abounding box around the object -- if it is purple and says 0 it was dected by the object detector.  There should be another box called 'bb' . 'bb' is the actual box that will be sent to the planner.  When running the code make sure bb is where you want it to be.  If not, wait a while and make sure robot arms are not in the way.
 
 Run the code with:
+    
     rosrun ari_moveit_tests pick_up.py
 
 ** ALWAYS VERIFY PURPLE TRAJECTRY BEFORE HITTING ENTER !!!**
