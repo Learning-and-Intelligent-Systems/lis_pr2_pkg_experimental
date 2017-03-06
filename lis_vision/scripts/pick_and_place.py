@@ -11,15 +11,16 @@ from manipulation.bodies.robot import get_active_arm_indices
 from manipulation.grasps.grasp_options import get_grasp_options
 from manipulation.constants import GRASP_TYPES
 from manipulation.primitives.utils import Pose
-from manipulation.motion.single_query import vector_traj_helper, motion_plan
+from manipulation.motion.single_query import vector_traj_helper, motion_plan, workspace_traj_helper
 from manipulation.bodies.robot import get_manipulator
 from manipulation.primitives.display import draw_axes
 from manipulation.primitives.transforms import get_trans, unit_pose, set_pose
 
 from openravepy import Sensor, RaveCreateCollisionChecker
-from openravepy import databases
+from openravepy import databases, interfaces
 from openravepy import IkParameterization
 from openravepy.misc import DrawAxes
+from time import time
 
 import numpy as np
 #import rospy
@@ -100,7 +101,22 @@ def apply_trans(trans, point):
 #def plan_pick(env, robot, obj, grasps, approach_config, do_motion_planning):
 
 def feasible_pick_place(env, robot, obj, grasps, approach_config, do_motion_planning):
+  t0 = time()
+  base_manip = interfaces.BaseManipulation(robot, plannername=None, maxvelmult=None)
+  #base_manip = interfaces.BaseManipulation(robot, plannername=None, maxvelmult=None)
+  print time() - t0
+  #t0 = time()
+  #task_manip = interfaces.TaskManipulation(robot, plannername=None, maxvelmult=None, graspername=None)
+  #task_manip = interfaces.TaskManipulation(robot, plannername=None, maxvelmult=None, graspername=None)
+  #print time() - t0
+  #print
+
+  # Slight overhead but it appears you can just keep creating them
+  #0.000910043716431
+  #0.000546932220459
+
   pose = Pose(get_pose(obj))
+  env.Remove(obj) # NOTE - I'm just testing this now
   for grasp in grasps:
     manip_trans, approach_vector = manip_from_pose_grasp(pose, grasp)
 
@@ -127,13 +143,16 @@ def feasible_pick_place(env, robot, obj, grasps, approach_config, do_motion_plan
 
     traj, arm_traj = None, None
     if do_motion_planning:
-      traj = vector_traj_helper(env, robot, approach_vector)
+      #traj = vector_traj_helper(env, robot, approach_vector)
+      traj = workspace_traj_helper(base_manip, approach_vector)
       if traj is None:
+        print 'Vec traj failure'
         continue
       set_config(robot, traj.end(), get_active_arm_indices(robot))
       #vector_config = oracle.get_robot_config()
       arm_traj = motion_plan(env, CSpace.robot_arm(get_manipulator(robot)), approach_config, self_collisions=True)
       if arm_traj is None:
+        print 'Approach traj failure'
         continue
 
     return grasp_config, traj, arm_traj
