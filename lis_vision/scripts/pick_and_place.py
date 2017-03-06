@@ -24,6 +24,18 @@ from openravepy.misc import DrawAxes
 import numpy as np
 #import rospy
 
+
+from manipulation.bodies.bodies import set_name, set_color, set_transparency
+from openravepy import RaveCreateKinBody
+
+def centered_box_body(env, dx, dy, dz, name=None, color=None, transparency=None):
+  body = RaveCreateKinBody(env, '')
+  body.InitFromBoxes(np.array([[0, 0, 0, .5*dx, .5*dy, .5*dz]]), draw=True)
+  if name is not None: set_name(body, name)
+  if color is not None: set_color(body, color)
+  if transparency is not None: set_transparency(body, transparency)
+  return body
+
 class HackedOracle(object):
   def __init__(self, env):
     self.env = env
@@ -52,7 +64,7 @@ def get_grasps(env, robot, body, grasp_approach, grasp_type):
   print 'Creating', get_name(body), GRASP_TYPES.names[grasp_type], 'database' # TODO - move this to create_grasp_database
   return hacked_create_grasp_database(env, grasp_options)
 
-def initialize_openrave(env, min_delta=.01, collision_checker='ode'):
+def initialize_openrave(env, arm, min_delta=.01, collision_checker='ode'):
   env.StopSimulation()
   for sensor in env.GetSensors():
     sensor.Configure(Sensor.ConfigureCommand.PowerOff)
@@ -70,7 +82,8 @@ def initialize_openrave(env, min_delta=.01, collision_checker='ode'):
   l_model.setRobotWeights()
   l_model.setRobotResolutions(xyzdelta=min_delta) # xyzdelta is the minimum Cartesian distance of an object
 
-  robot.SetActiveManipulator('leftarm') # NOTE - Need this or the manipulator computations are off
+  or_arm = 'leftarm' if arm == 'l' else 'rightarm'
+  robot.SetActiveManipulator(or_arm) # NOTE - Need this or the manipulator computations are off
   #extrema = aabb_extrema(aabb_union([aabb_from_body(body) for body in env.GetBodies()])).T
   #robot.SetAffineTranslationLimits(*extrema)
 
@@ -83,6 +96,8 @@ def initialize_openrave(env, min_delta=.01, collision_checker='ode'):
 
 def apply_trans(trans, point):
   return np.dot(trans, np.concatenate([point, [1]]))[:3]
+
+#def plan_pick(env, robot, obj, grasps, approach_config, do_motion_planning):
 
 def feasible_pick_place(env, robot, obj, grasps, approach_config, do_motion_planning):
   pose = Pose(get_pose(obj))
@@ -117,7 +132,7 @@ def feasible_pick_place(env, robot, obj, grasps, approach_config, do_motion_plan
         continue
       set_config(robot, traj.end(), get_active_arm_indices(robot))
       #vector_config = oracle.get_robot_config()
-      arm_traj = motion_plan(env, CSpace.robot_arm(get_manipulator(robot)), approach_config)
+      arm_traj = motion_plan(env, CSpace.robot_arm(get_manipulator(robot)), approach_config, self_collisions=True)
       if arm_traj is None:
         continue
 
