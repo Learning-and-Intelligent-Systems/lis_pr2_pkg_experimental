@@ -1,0 +1,47 @@
+set expandtab
+set smarttab
+set shiftwidth=4
+set tabstop=4
+set sw=4
+set ai
+
+set noerrorbells
+set novisualbell
+
+set hlsearch
+set incsearch
+set mousemodel=extend
+set ignorecase
+set smartcase
+set wrapscan
+
+set cmdheight=2
+set number
+set title
+set ttyfast
+set mouse=a
+
+
+filetype plugin indent on
+syntax on
+
+set wmw=0
+
+" tab navigation like firefox
+nnoremap <C-t>     :tabnew<CR>
+inoremap <C-t>     <Esc>:tabnew<CR>
+nnoremap <C-Left> :tabprevious<CR>
+nnoremap <C-Right> :tabnext<CR>
+
+"map ww :w <cr> 
+"map wq :close <cr>
+"map sh :sh <cr>
+map <F3> :noh <cr>
+
+"window navigation
+nmap <silent> <A-Up> :wincmd k<CR>
+nmap <silent> <A-Down> :wincmd j<CR>
+nmap <silent> <A-Left> :wincmd h<CR>
+nmap <silent> <A-Right> :wincmd l<CR>
+
+
