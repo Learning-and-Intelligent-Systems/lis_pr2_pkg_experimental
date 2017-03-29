@@ -26,13 +26,12 @@ class ClusterFilter():
             (207,208,110), (127,197,192), (23,34,75) ]]
 
 
-    min_height= 0.3
-    max_height=1.5
-    min_w = 0.7
-    min_area = .5
-    max_area = .75
+    min_height = 0.3
+    max_height = 1.5
+    #min_w = 0.7
+    #min_area = .5
+    #max_area = .75
     density = 1e6
-
 
     def __init__(self, tf_listener=None):
 
@@ -74,12 +73,11 @@ class ClusterFilter():
             table = (0,0,0)
         else:
             p = self.best_table.pose.position
-            table =[ float(q) for q in \
-                    list( self.T*np.matrix([p.x,p.y,p.z,1.0]).T)[:3]]
+            table = [float(q) for q in \
+                     list( self.T*np.matrix([p.x,p.y,p.z,1.0]).T)[:3]]
 
         markers = [] 
         boxes = []
-
         results = []
         for i, cluster in enumerate(data_msg.markers):
             points =[ [float(q) for q in \
@@ -88,30 +86,29 @@ class ClusterFilter():
 
             ros_pts = [Point(*p) for p in points]
             points = np.array(points)
-            x,y,z = np.mean(points, axis=0)
+            x,y,z = (np.max(points,axis=0) + np.min(points,axis=0))/2.
             w,h,l = np.max(points,axis=0) - np.min(points,axis=0)
-            area = w*h*l
-            density = len(points)/area
+            volume = w*h*l
+            density = len(points)/volume
 
             # not a tight cluster of points
             if density < self.density: continue
-            #box too large
+            
+            # box too large
             #if w*h*l > self.max_area: continue
-            # box under table
-            if z < table[2]: continue
-            # box to high off table
-            if z > (0.2 + table[2]): continue
+            
+            # box is not resting on the table
+            if abs(z-l/2. - table[2]) > .1: continue
 
-
-            m= deepcopy(cluster)
+            m = deepcopy(cluster)
             m.header = Header(0, rospy.Time(0), "base_link")
             m.points = ros_pts
             m.ns = "clusters"
             markers.append(m)
 
             bb = deepcopy(m)
-            bb.type=Marker.CUBE
-            bb.pose = Pose(Point(x,y,z), Quaternion(0,0,0,1) )
+            bb.type = Marker.CUBE
+            bb.pose = Pose(Point(x,y,z), Quaternion(0,0,0,1))
             bb.scale.x = w
             bb.scale.y = h
             bb.scale.z = l
@@ -119,14 +116,13 @@ class ClusterFilter():
             bb.ns = "bounding_boxes"
             boxes.append(bb)
 
-            results.append ( (area, x, y,  m, bb) )
+            results.append((volume, x, y,  m, bb))
 
 
         results = sorted(results, \
                 key=lambda x: (x[0], x[1], x[2]) , reverse=True)
 
-
-        for i, (area,x,y,m,bb) in enumerate(results):
+        for i, (volume,x,y,m,bb) in enumerate(results):
             m.id = i
             bb.id = i
             bb.color = self.colors[i%len(self.colors)]
@@ -139,9 +135,6 @@ class ClusterFilter():
             markers.append(m)
             boxes.append(bb)
             boxes.append(bbtext)
-
-
-
 
         self.pub_clusters.publish(MarkerArray(markers))
         self.pub_bb.publish(MarkerArray(boxes))
@@ -163,7 +156,3 @@ if __name__=="__main__":
     rospy.init_node("cluster_filters")
     tf=ClusterFilter()
     rospy.spin()
-
-
-
-
