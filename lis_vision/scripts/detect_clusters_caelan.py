@@ -40,23 +40,7 @@ from sound_play.libsoundplay import SoundClient
 
 from image_geometry import PinholeCameraModel
 
-def ros_point_to_or_point(ros_point):
-  return np.array([ros_point.x, ros_point.y, ros_point.z])
-
-def or_point_to_ros_point(or_point):
-  return Point(*or_point[:3])
-
-def ros_quat_to_or_quat(ros_quat):
-  return np.array([ros_quat.w, ros_quat.x, ros_quat.y, ros_quat.z])
-
-def ros_pose_to_or_pose(ros_pose):
-  return np.concatenate([
-    ros_quat_to_or_quat(ros_pose.orientation),
-    ros_point_to_or_point(ros_pose.position), 
-  ])
-
-def or_quat_to_ros_quat(or_quat): # TODO - make this return a quat object
-  return np.concatenate([or_quat[1:], or_quat[:1]])
+from bounding_volumes import *
 
 # def oobb_from_points_2D(points): # NOTE - not necessarily optimal
 #   mu = np.mean(points, axis=1)
@@ -72,22 +56,6 @@ def or_quat_to_ros_quat(or_quat): # TODO - make this return a quat object
 #   w, h, l = np.max(points, axis=1) - np.min(points, axis=1)
 #
 #   return mu, np.concatenate([extents, [l]]), or_quat_to_ros_quat(quatFromRotationMatrix(trans))
-
-def rot_2D(theta):
-    c, s = np.cos(theta), np.sin(theta)
-    return np.matrix([[c, -s], [s, c]])
-
-import heapq
-
-def robust_max(points, p=.99):
-    #return np.max(rot_vertices, axis=1)
-    n = int((1-p)*points.shape[1])+1
-    return np.array([[heapq.nlargest(n, points[i,:].tolist()[0])[-1]] for i in range(points.shape[0])])
-
-def robust_min(points, p=.99):
-    #return np.min(rot_vertices, axis=1)
-    n = int((1-p)*points.shape[1])+1
-    return np.array([[heapq.nsmallest(n, points[i,:].tolist()[0])[-1]] for i in range(points.shape[0])])
 
 def robust_oobb_from_points_2D_convex(points): # NOTE - not necessarily optimal
   points_2D = points[:,:2]
@@ -175,12 +143,6 @@ def oobb_from_points2(points): # NOTE - has no motivation to orient z correctly
     oobb = mesh.bounding_box_oriented
     trans = oobb.primitive.transform
     return trans[:3, 3], oobb.primitive.extents, or_quat_to_ros_quat(quatFromRotationMatrix(trans[:3,:3]))
-
-def aabb_from_points(points):
-  center = (np.max(points, axis=1) + np.min(points, axis=1))/2
-  extents = np.max(points, axis=1) - np.min(points, axis=1)
-  trans = np.array([0, 0, 0, 1])
-  return center, extents, trans
 
 # env = Environment()
 # #robot = env.ReadRobotXMLFile('robots/pr2-beta-sim.robot.xml') # ReadRobotData
@@ -347,7 +309,7 @@ class ClusterFilter():
                 m.scale.x = .02
                 m.scale.y = .04
                 m.scale.z = 0
-                m.points = [or_point_to_ros_point(p0), or_point_to_ros_point(p1)]
+                m.points = [np_point_to_ros_point(p0), np_point_to_ros_point(p1)]
                 m.ns = "viewcone"
                 m.lifetime.secs = self.duration
                 m.lifetime.nsecs = 0 # Nanoseconds
@@ -404,7 +366,7 @@ class ClusterFilter():
         table = [float(q) for q in list(T*np.matrix([p.x,p.y,p.z,1.0]).T)[:3]]
 
         trans = trans_from_pose(ros_pose_to_or_pose(self.best_table.pose))
-        hull_vertices = np.array([ros_point_to_or_point(point) for point in self.best_table.convex_hull])
+        hull_vertices = np.array([ros_point_to_np_point(point) for point in self.best_table.convex_hull])
         table_vertices = T.dot(trans).dot(np.vstack([hull_vertices.T, np.ones(len(hull_vertices))]))[:3,:].T
         (tx, ty, tz), (tw, th, tl), tquat = aabb_from_points(table_vertices.T)
 
@@ -420,7 +382,7 @@ class ClusterFilter():
             #        for p in cluster.points]
             #points = np.array(points)
 
-            head_points = np.array([ros_point_to_or_point(point) for point in cluster.points])
+            head_points = np.array([ros_point_to_np_point(point) for point in cluster.points])
             points = T.dot(np.vstack([head_points.T, np.ones(len(head_points))]))[:3,:].T
             ros_pts = [Point(*p) for p in points]
 
