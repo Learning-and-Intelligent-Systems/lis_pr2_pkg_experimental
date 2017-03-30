@@ -73,12 +73,17 @@ def script(env, arm='l'):
 
 HELP_MESSAGE = 'python %s -p <problem>'%(__file__)
 
+# CheckCollisionRays
+
+def script2(env):
+  raw_input('Done!')
+
 def main():
   env = Environment()
   env.Load('env.dae')
 
   try:
-    SetViewerUserThread(env, 'qtcoin', lambda: script(env))
+    SetViewerUserThread(env, 'qtcoin', lambda: script2(env))
   finally:
     env.Destroy()
 
