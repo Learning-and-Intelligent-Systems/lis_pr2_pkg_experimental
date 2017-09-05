@@ -5,6 +5,7 @@
         <param name="frame_id" type="string" value="odom_combined" />
         <param name="base_frame_id" type="string" value="base_footprint" />
         <param name="sensor_model/max_range" value="5.0" />
+        <param name="filter_ground" value="true" />
         <remap from="cloud_in" to="/head_mount_kinect/depth_registered/points" />
     </node>
 </launch>
