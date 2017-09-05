@@ -6,7 +6,6 @@
   <arg name="rviz" default="false" />
   <arg name="vision" default="false" />
 
-
   <arg name="config" default="$(find ari_moveit_config)" />
 
     <!-- Load warehouse parameters -->  
@@ -24,7 +23,7 @@
 
 <!-- launch rviz -->
 <arg if="$(arg rviz)" name="command_args" value="-d $(arg config)/launch/ari.rviz" />
-<node if="$(arg rviz)" name="$(anon rviz)" launch-prefix="" pkg="rviz" type="rviz" respawn="false"
+  <node if="$(arg rviz)" name="$(anon rviz)" launch-prefix="" pkg="rviz" type="rviz" respawn="false"
 	args="$(arg command_args)" output="screen">
     <rosparam command="load" file="$(arg config)/config/kinematics.yaml"/>
   </node>
@@ -36,5 +35,7 @@
 
 <!-- head pointer -->
 <node if="$(arg rviz)" pkg="lis_vision" name="head_pointer" type="point_head.py" output="screen"/>
+
+<!--include if="$(arg octmap)" file="$(arg config)/launch/moveit_sensor_manager.launch"/-->
 
 </launch>

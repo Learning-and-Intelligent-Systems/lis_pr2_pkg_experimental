@@ -35,9 +35,10 @@ display_trajectory_publisher.publish(display_trajectory);
 
 
 # Uncomment below line when working with a real robot
-q = raw_input("type 'y' to go")
+q = raw_input("type 'y' to go: ")
 if q in ["y", "yes", "Y", "YES", "Yes"]:
+    print 'Executing trajecotry'
     group.go(wait=True)
-
-
-raw_input("exiting error")
+else:
+    print 'Terminating'
+print("exiting error")
